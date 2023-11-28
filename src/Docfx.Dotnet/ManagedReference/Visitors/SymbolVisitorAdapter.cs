@@ -706,6 +706,7 @@ internal class SymbolVisitorAdapter : SymbolVisitor<MetadataItem>
             AddReferenceDelegate = AddReferenceDelegate,
             Source = item.Source,
             ResolveCode = ResolveCode,
+            ItemName = item.Name
         };
 
         void AddReferenceDelegate(string id, string commentId)

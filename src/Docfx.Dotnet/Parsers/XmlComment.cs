@@ -235,26 +235,30 @@ internal class XmlComment
     {
         var iterator = navigator.Select(xpath);
         var result = new Dictionary<string, string>();
-        if (iterator == null)
-        {
-            return result;
-        }
+        var duplicates = new List<string>();
+        string path = context.Source?.Remote != null
+            ? Path.Combine(EnvironmentContext.BaseDirectory, context.Source.Remote.Path)
+            : context.Source?.Path;
+
         foreach (XPathNavigator nav in iterator)
         {
             string name = nav.GetAttribute("name", string.Empty);
             string description = GetXmlValue(nav);
             if (!string.IsNullOrEmpty(name))
             {
-                if (result.ContainsKey(name))
+                if (!result.TryAdd(name, description))
                 {
-                    string path = context.Source?.Remote != null ? Path.Combine(EnvironmentContext.BaseDirectory, context.Source.Remote.Path) : context.Source?.Path;
-                    Logger.LogWarning($"Duplicate {contentType} '{name}' found in comments, the latter one is ignored.", file: StringExtension.ToDisplayPath(path), line: context.Source?.StartLine.ToString());
-                }
-                else
-                {
-                    result.Add(name, description);
+                    duplicates.Add(name);
                 }
             }
+        }
+
+        if (duplicates.Count != 0)
+        {
+            string duplicatesString = string.Join(", ", duplicates.Select(d => $"'{d}'"));
+            Logger.LogWarning(
+                $"Duplicate {contentType}(s) {duplicatesString} found in comments for {context.ItemName}, the latter one is ignored.",
+                file: path.ToDisplayPath(), line: context.Source?.StartLine.ToString());
         }
 
         return result;

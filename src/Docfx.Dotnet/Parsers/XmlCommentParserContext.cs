@@ -14,4 +14,6 @@ internal class XmlCommentParserContext
     public Func<string, string> ResolveCode { get; init; }
 
     public SourceDetail Source { get; init; }
+
+    public string ItemName { get; set; }
 }
